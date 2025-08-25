@@ -1,0 +1,651 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// CORE ENTITIES
+// ============================================
+
+// العملاء
+model Client {
+  id        String     @id @default(cuid())
+  code      String     @unique
+  name      String
+  phone     String?
+  email     String?    
+  address   String?
+  note      String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  
+  projects     Project[]
+  contracts    Contract[]
+  revenues     Revenue[]
+  payments     Payment[]
+  invoices     Invoice[]
+  installments Installment[]
+  vouchers     Voucher[]
+  
+  @@index([name])
+  @@index([phone])
+  @@index([email])
+  @@index([createdAt])
+}
+
+// الموردين
+model Supplier {
+  id        String     @id @default(cuid())
+  code      String     @unique
+  name      String
+  phone     String?
+  email     String?
+  address   String?
+  note      String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  
+  expenses  Expense[]
+  invoices  Invoice[]
+  vouchers  Voucher[]
+  
+  @@index([name])
+  @@index([createdAt])
+}
+
+// الشركاء
+model Partner {
+  id          String     @id @default(cuid())
+  code        String     @unique
+  name        String
+  phone       String?
+  email       String?
+  type        String     // buyer|seller|investor
+  percentage  Float?     // نسبة الشراكة
+  note        String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  projectPartners    ProjectPartner[]
+  unitPartners       UnitPartner[]
+  settlementLines    SettlementLine[]
+  contracts          Contract[]
+  returns            Return[]
+}
+
+// الموظفين
+model Employee {
+  id          String     @id @default(cuid())
+  code        String     @unique
+  name        String
+  phone       String?
+  email       String?
+  position    String?    // المنصب
+  department  String?    // القسم
+  salary      Decimal    @db.Decimal(18, 2)
+  hireDate    DateTime
+  isActive    Boolean    @default(true)
+  note        String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  payrolls    Payroll[]
+}
+
+// ============================================
+// REAL ESTATE ENTITIES
+// ============================================
+
+// المشاريع
+model Project {
+  id          String     @id @default(cuid())
+  code        String     @unique
+  name        String
+  clientId    String?
+  location    String?
+  status      String     @default("active") // active|completed|suspended
+  startDate   DateTime
+  endDate     DateTime?
+  budget      Decimal?   @db.Decimal(18, 2)
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  client          Client?          @relation(fields: [clientId], references: [id])
+  units           Unit[]
+  phases          ProjectPhase[]
+  projectPartners ProjectPartner[]
+  revenues        Revenue[]
+  expenses        Expense[]
+  contracts       Contract[]
+  materialMoves   MaterialMove[]
+  payrolls        Payroll[]
+  journalEntries  JournalEntry[]
+}
+
+// مراحل المشروع
+model ProjectPhase {
+  id          String     @id @default(cuid())
+  projectId   String
+  name        String
+  startDate   DateTime
+  endDate     DateTime?
+  budget      Decimal?   @db.Decimal(18, 2)
+  status      String     @default("planned") // planned|in_progress|completed
+  note        String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  project     Project    @relation(fields: [projectId], references: [id])
+  payrolls    Payroll[]
+}
+
+// الوحدات
+model Unit {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  projectId   String
+  name        String?
+  type        String       // شقة|فيلا|محل|مكتب
+  floor       Int?
+  building    String?
+  area        Decimal      @db.Decimal(18, 2)
+  price       Decimal      @db.Decimal(18, 2)
+  status      String       @default("available") // available|sold|reserved|cancelled
+  notes       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  project      Project       @relation(fields: [projectId], references: [id])
+  contracts    Contract[]
+  installments Installment[]
+  unitPartners UnitPartner[]
+}
+
+// شركاء الوحدات
+model UnitPartner {
+  id         String    @id @default(cuid())
+  unitId     String
+  partnerId  String
+  percentage Float     // نسبة الشريك في الوحدة
+  createdAt  DateTime  @default(now())
+  
+  unit       Unit      @relation(fields: [unitId], references: [id])
+  partner    Partner   @relation(fields: [partnerId], references: [id])
+  
+  @@unique([unitId, partnerId])
+}
+
+// شركاء المشاريع
+model ProjectPartner {
+  id         String    @id @default(cuid())
+  projectId  String
+  partnerId  String
+  percentage Float     // نسبة الشريك في المشروع
+  role       String?   // دور الشريك
+  createdAt  DateTime  @default(now())
+  
+  project    Project   @relation(fields: [projectId], references: [id])
+  partner    Partner   @relation(fields: [partnerId], references: [id])
+  
+  @@unique([projectId, partnerId])
+}
+
+// ============================================
+// CONTRACTS & INSTALLMENTS
+// ============================================
+
+// العقود
+model Contract {
+  id           String        @id @default(cuid())
+  contractNo   String        @unique
+  date         DateTime
+  clientId     String
+  unitId       String
+  projectId    String?
+  totalAmount  Decimal       @db.Decimal(18, 2)
+  downPayment  Decimal       @db.Decimal(18, 2)
+  months       Int           // عدد الأشهر
+  planType     String        @default("MONTHLY") // MONTHLY|QUARTERLY|YEARLY
+  discount     Decimal?      @db.Decimal(18, 2)
+  commission   Decimal?      @db.Decimal(18, 2)
+  status       String        @default("active") // active|cancelled|completed
+  notes        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  
+  client       Client        @relation(fields: [clientId], references: [id])
+  unit         Unit          @relation(fields: [unitId], references: [id])
+  project      Project?      @relation(fields: [projectId], references: [id])
+  installments Installment[]
+  partners     Partner[]
+  returns      Return[]
+}
+
+// الأقساط
+model Installment {
+  id            String    @id @default(cuid())
+  contractId    String
+  clientId      String
+  unitId        String
+  installmentNo Int       // رقم القسط
+  dueDate       DateTime
+  amount        Decimal   @db.Decimal(18, 2)
+  paidAmount    Decimal   @db.Decimal(18, 2) @default(0)
+  status        String    @default("pending") // pending|paid|partial|overdue
+  paidAt        DateTime?
+  note          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  contract      Contract  @relation(fields: [contractId], references: [id])
+  client        Client    @relation(fields: [clientId], references: [id])
+  unit          Unit      @relation(fields: [unitId], references: [id])
+  payments      Payment[]
+  bankImports   BankImport[]
+  
+  @@index([dueDate])
+  @@index([status])
+}
+
+// الإرجاعات
+model Return {
+  id          String    @id @default(cuid())
+  contractId  String
+  partnerId   String?
+  date        DateTime
+  amount      Decimal   @db.Decimal(18, 2)
+  reason      String?
+  status      String    @default("pending") // pending|approved|rejected
+  note        String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  contract    Contract  @relation(fields: [contractId], references: [id])
+  partner     Partner?  @relation(fields: [partnerId], references: [id])
+}
+
+// ============================================
+// FINANCIAL ENTITIES
+// ============================================
+
+// الإيرادات
+model Revenue {
+  id          String    @id @default(cuid())
+  date        DateTime
+  amount      Decimal   @db.Decimal(18, 2)
+  type        String    // contract|service|other
+  clientId    String?
+  projectId   String?
+  description String?
+  reference   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  client      Client?   @relation(fields: [clientId], references: [id])
+  project     Project?  @relation(fields: [projectId], references: [id])
+}
+
+// المصروفات
+model Expense {
+  id          String    @id @default(cuid())
+  date        DateTime
+  amount      Decimal   @db.Decimal(18, 2)
+  type        String    // material|labor|equipment|admin|other
+  supplierId  String?
+  projectId   String?
+  description String?
+  reference   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  supplier    Supplier? @relation(fields: [supplierId], references: [id])
+  project     Project?  @relation(fields: [projectId], references: [id])
+}
+
+// الفواتير
+model Invoice {
+  id          String    @id @default(cuid())
+  invoiceNo   String    @unique
+  date        DateTime
+  type        String    // sales|purchase
+  clientId    String?
+  supplierId  String?
+  totalAmount Decimal   @db.Decimal(18, 2)
+  taxAmount   Decimal   @db.Decimal(18, 2) @default(0)
+  discount    Decimal   @db.Decimal(18, 2) @default(0)
+  status      String    @default("draft") // draft|sent|paid|cancelled
+  dueDate     DateTime?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  client      Client?   @relation(fields: [clientId], references: [id])
+  supplier    Supplier? @relation(fields: [supplierId], references: [id])
+  payments    Payment[]
+}
+
+// المدفوعات
+model Payment {
+  id            String       @id @default(cuid())
+  date          DateTime
+  amount        Decimal      @db.Decimal(18, 2)
+  method        String       // cash|bank|check
+  clientId      String?
+  installmentId String?
+  invoiceId     String?
+  reference     String?
+  note          String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  
+  client        Client?      @relation(fields: [clientId], references: [id])
+  installment   Installment? @relation(fields: [installmentId], references: [id])
+  invoice       Invoice?     @relation(fields: [invoiceId], references: [id])
+}
+
+// ============================================
+// ACCOUNTING ENTITIES
+// ============================================
+
+// دليل الحسابات
+model Account {
+  id           String         @id @default(cuid())
+  code         String         @unique
+  name         String
+  type         String         // asset|liability|equity|revenue|expense
+  parentId     String?
+  isActive     Boolean        @default(true)
+  description  String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  
+  parent       Account?       @relation("AccountHierarchy", fields: [parentId], references: [id])
+  children     Account[]      @relation("AccountHierarchy")
+  journalLines JournalLine[]
+}
+
+// القيود المحاسبية
+model JournalEntry {
+  id          String         @id @default(cuid())
+  entryNo     String         @unique
+  date        DateTime
+  type        String         // general|payment|receipt|adjustment
+  projectId   String?
+  description String?
+  reference   String?
+  isPosted    Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  
+  project     Project?       @relation(fields: [projectId], references: [id])
+  lines       JournalLine[]
+}
+
+// سطور القيود
+model JournalLine {
+  id            String       @id @default(cuid())
+  entryId       String
+  accountId     String
+  debit         Decimal      @db.Decimal(18, 2) @default(0)
+  credit        Decimal      @db.Decimal(18, 2) @default(0)
+  description   String?
+  
+  entry         JournalEntry @relation(fields: [entryId], references: [id])
+  account       Account      @relation(fields: [accountId], references: [id])
+  
+  @@index([accountId])
+}
+
+// الصناديق
+model Cashbox {
+  id                String     @id @default(cuid())
+  code              String     @unique
+  name              String
+  balance           Decimal    @db.Decimal(18, 2) @default(0)
+  type              String     // main|sub
+  description       String?
+  isActive          Boolean    @default(true)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  
+  transfersFrom     Transfer[] @relation("FromCashbox")
+  transfersTo       Transfer[] @relation("ToCashbox")
+  vouchers          Voucher[]
+}
+
+// التحويلات بين الصناديق
+model Transfer {
+  id            String    @id @default(cuid())
+  transferNumber String   @unique
+  fromCashboxId String
+  toCashboxId   String
+  amount        Decimal   @db.Decimal(18, 2)
+  date          DateTime
+  description   String?
+  reference     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  fromCashbox   Cashbox   @relation("FromCashbox", fields: [fromCashboxId], references: [id])
+  toCashbox     Cashbox   @relation("ToCashbox", fields: [toCashboxId], references: [id])
+}
+
+// سندات القبض والصرف
+model Voucher {
+  id          String    @id @default(cuid())
+  type        String    // receipt|payment
+  voucherNo   String    @unique
+  date        DateTime
+  amount      Decimal   @db.Decimal(18, 2)
+  cashboxId   String
+  clientId    String?
+  supplierId  String?
+  description String?
+  reference   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  cashbox     Cashbox   @relation(fields: [cashboxId], references: [id])
+  client      Client?   @relation(fields: [clientId], references: [id])
+  supplier    Supplier? @relation(fields: [supplierId], references: [id])
+}
+
+// ============================================
+// HR & PAYROLL
+// ============================================
+
+// المرتبات
+model Payroll {
+  id            String        @id @default(cuid())
+  employeeId    String
+  projectId     String?
+  phaseId       String?
+  month         Int
+  year          Int
+  basicSalary   Decimal       @db.Decimal(18, 2)
+  allowances    Decimal       @db.Decimal(18, 2) @default(0)
+  deductions    Decimal       @db.Decimal(18, 2) @default(0)
+  netSalary     Decimal       @db.Decimal(18, 2)
+  status        String        @default("draft") // draft|approved|paid
+  paidAt        DateTime?
+  note          String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  employee      Employee      @relation(fields: [employeeId], references: [id])
+  project       Project?      @relation(fields: [projectId], references: [id])
+  phase         ProjectPhase? @relation(fields: [phaseId], references: [id])
+  
+  @@unique([employeeId, month, year])
+}
+
+// ============================================
+// INVENTORY & MATERIALS
+// ============================================
+
+// المخازن
+model Warehouse {
+  id            String         @id @default(cuid())
+  code          String         @unique
+  name          String
+  location      String?
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  materialMoves MaterialMove[]
+}
+
+// المواد
+model Material {
+  id            String         @id @default(cuid())
+  code          String         @unique
+  name          String
+  unit          String         // قطعة|متر|كيلو|طن
+  minQuantity   Decimal        @db.Decimal(18, 2) @default(0)
+  currentQty    Decimal        @db.Decimal(18, 2) @default(0)
+  lastPrice     Decimal        @db.Decimal(18, 2) @default(0)
+  category      String?
+  description   String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  materialMoves MaterialMove[]
+}
+
+// حركات المواد
+model MaterialMove {
+  id            String     @id @default(cuid())
+  date          DateTime
+  type          String     // in|out|transfer
+  materialId    String
+  warehouseId   String
+  projectId     String?
+  quantity      Decimal    @db.Decimal(18, 2)
+  price         Decimal    @db.Decimal(18, 2)
+  totalAmount   Decimal    @db.Decimal(18, 2)
+  reference     String?
+  note          String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  material      Material   @relation(fields: [materialId], references: [id])
+  warehouse     Warehouse  @relation(fields: [warehouseId], references: [id])
+  project       Project?   @relation(fields: [projectId], references: [id])
+  
+  @@index([date])
+  @@index([materialId])
+}
+
+// ============================================
+// PARTNER SETTLEMENTS
+// ============================================
+
+// التسويات بين الشركاء
+model Settlement {
+  id          String           @id @default(cuid())
+  settlementNo String          @unique
+  date        DateTime
+  type        String           // periodic|project|final
+  status      String           @default("draft") // draft|approved|paid
+  totalAmount Decimal          @db.Decimal(18, 2)
+  note        String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  
+  lines       SettlementLine[]
+}
+
+// سطور التسوية
+model SettlementLine {
+  id           String     @id @default(cuid())
+  settlementId String
+  partnerId    String
+  amount       Decimal    @db.Decimal(18, 2)
+  type         String     // debit|credit
+  description  String?
+  
+  settlement   Settlement @relation(fields: [settlementId], references: [id])
+  partner      Partner    @relation(fields: [partnerId], references: [id])
+}
+
+// ============================================
+// SYSTEM ENTITIES
+// ============================================
+
+// استيراد كشف البنك
+model BankImport {
+  id                   String       @id @default(cuid())
+  date                 DateTime
+  amount               Decimal      @db.Decimal(18, 2)
+  type                 String       // debit|credit
+  reference            String?
+  bankName             String?
+  description          String?
+  matchedInstallmentId String?
+  posted               Boolean      @default(false)
+  createdAt            DateTime     @default(now())
+  
+  matchedInstallment   Installment? @relation(fields: [matchedInstallmentId], references: [id])
+}
+
+// سجل التدقيق
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?  // سيتم استخدامه لاحقاً عند إضافة المستخدمين
+  action    String   // CREATE|UPDATE|DELETE
+  entity    String   // اسم الجدول
+  entityId  String   // معرف السجل
+  oldData   Json?    // البيانات القديمة
+  newData   Json?    // البيانات الجديدة
+  meta      Json?    // معلومات إضافية
+  createdAt DateTime @default(now())
+  
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+// إعدادات النظام
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+// الإشعارات
+model Notification {
+  id         String    @id @default(cuid())
+  type       String    // payment_due|contract_expiry|backup_success|backup_failed
+  title      String
+  message    String
+  severity   String    @default("info") // info|warning|error|success
+  isRead     Boolean   @default(false)
+  readAt     DateTime?
+  data       Json?
+  createdAt  DateTime  @default(now())
+  
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// النسخ الاحتياطية
+model Backup {
+  id         String   @id @default(cuid())
+  filename   String
+  size       BigInt
+  type       String   // manual|scheduled
+  status     String   // success|failed
+  location   String   // local|cloud
+  error      String?
+  createdAt  DateTime @default(now())
+}

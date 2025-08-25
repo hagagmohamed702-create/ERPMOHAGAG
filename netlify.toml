@@ -1,0 +1,42 @@
+# Netlify configuration file
+
+[build]
+  # Build the app inside the subfolder
+  base = ""
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # Pin a stable Node.js version for Next/Prisma
+  NODE_VERSION = "20"
+  NEXT_TELEMETRY_DISABLED = "1"
+  # IMPORTANT: Do NOT put DATABASE_URL here in the repo.
+  # Set DATABASE_URL in Netlify UI -> Site settings -> Environment variables.
+
+# Security & performance headers (optional, safe)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Do NOT add redirects for /api; plugin-nextjs handles it.
+
+# Next.js plugin enables SSR/API/function routing
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Local dev section is ignored by Netlify CI; optional
+[dev]
+  command = "npm run dev"
+  port = 3000
+  targetPort = 3000
+  publish = ".next"
+  autoLaunch = true
