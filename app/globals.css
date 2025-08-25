@@ -1,0 +1,403 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Modern Color Palette */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    
+    /* Enhanced Card & Surface */
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --surface: 0 0% 98%;
+    --surface-foreground: 222.2 84% 4.9%;
+    
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    
+    /* Modern Primary Colors - Blue to Purple Gradient */
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    
+    /* Enhanced Secondary */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    
+    /* Muted */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    
+    /* Accent */
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    
+    /* Destructive */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    
+    /* Enhanced Borders & Inputs */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    
+    /* Modern Glass Effect */
+    --glass: 0 0% 100% / 0.8;
+    --glass-foreground: 222.2 84% 4.9%;
+    
+    /* Enhanced Gradient Colors */
+    --gradient-from: 217 91% 60%;
+    --gradient-via: 221 83% 53%;
+    --gradient-to: 224 76% 48%;
+    
+    /* Modern Border Radius */
+    --radius: 1rem;
+    
+    /* New Modern Colors */
+    --success: 142 76% 36%;
+    --success-foreground: 355 7% 97%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 48 96% 89%;
+    --info: 199 89% 48%;
+    --info-foreground: 210 40% 98%;
+  }
+  
+  .dark {
+    /* Enhanced Dark Mode Colors */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    
+    /* Enhanced Card & Surface */
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --surface: 217.2 32.6% 10%;
+    --surface-foreground: 210 40% 98%;
+    
+    /* Popover */
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    
+    /* Enhanced Primary Brand Colors */
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    
+    /* Enhanced Secondary */
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    
+    /* Enhanced Muted */
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    
+    /* Enhanced Accent */
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    
+    /* Enhanced Destructive */
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    
+    /* Enhanced Borders & Inputs */
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+    
+    /* Enhanced Glass Effect */
+    --glass: 222.2 84% 4.9% / 0.6;
+    --glass-foreground: 210 40% 98%;
+    
+    /* Enhanced Gradient Colors */
+    --gradient-from: 217 91% 70%;
+    --gradient-via: 221 83% 63%;
+    --gradient-to: 224 76% 58%;
+    
+    /* Enhanced Modern Colors */
+    --success: 142 76% 36%;
+    --success-foreground: 355 7% 97%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 48 96% 89%;
+    --info: 199 89% 48%;
+    --info-foreground: 210 40% 98%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  /* Enhanced Typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+  
+  h1 { @apply text-4xl md:text-5xl; }
+  h2 { @apply text-3xl md:text-4xl; }
+  h3 { @apply text-2xl md:text-3xl; }
+  h4 { @apply text-xl md:text-2xl; }
+  h5 { @apply text-lg md:text-xl; }
+  h6 { @apply text-base md:text-lg; }
+  
+  /* Enhanced Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-muted/50 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/40 rounded-full hover:bg-muted-foreground/60 transition-colors;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/60;
+  }
+  
+  /* Enhanced Focus Styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer components {
+  /* Enhanced Glass morphism effect */
+  .glass {
+    @apply backdrop-blur-xl bg-glass border border-border/30 shadow-2xl;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+  
+  /* Enhanced Glass Card */
+  .glass-card {
+    @apply backdrop-blur-lg bg-white/80 dark:bg-slate-900/80 border border-white/20 dark:border-slate-700/30 shadow-xl;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+  }
+  
+  /* Enhanced Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to bg-clip-text text-transparent;
+  }
+  
+  /* Enhanced Gradient background */
+  .gradient-bg {
+    @apply bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to;
+  }
+  
+  /* Enhanced Modern Button Styles */
+  .btn-modern {
+    @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95;
+  }
+  
+  .btn-primary-modern {
+    @apply btn-modern bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-purple-700;
+  }
+  
+  .btn-secondary-modern {
+    @apply btn-modern bg-white/90 dark:bg-slate-800/90 text-foreground border border-border/50 shadow-lg hover:shadow-xl hover:bg-white dark:hover:bg-slate-700;
+  }
+  
+  /* Enhanced Hover Effects */
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl;
+  }
+  
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/25;
+  }
+  
+  /* Enhanced Focus Ring */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+  
+  /* Enhanced Card Styles */
+  .card-modern {
+    @apply bg-white/90 dark:bg-slate-900/90 border border-border/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+  
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] hover:-translate-y-1;
+  }
+  
+  /* Enhanced Shimmer Loading Effect */
+  .shimmer {
+    @apply relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-shimmer before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent;
+  }
+  
+  /* Enhanced Table Styles */
+  .table-modern {
+    @apply w-full border-collapse;
+  }
+  
+  .table-modern th {
+    @apply px-6 py-4 text-right font-semibold text-foreground bg-muted/50 border-b border-border/50;
+  }
+  
+  .table-modern td {
+    @apply px-6 py-4 text-right border-b border-border/30;
+  }
+  
+  .table-modern tr:hover {
+    @apply bg-muted/30 transition-colors duration-200;
+  }
+  
+  /* Enhanced Form Styles */
+  .input-modern {
+    @apply w-full px-4 py-3 rounded-xl border border-border/50 bg-background/50 focus:bg-background transition-all duration-200 focus:border-primary/50 focus:ring-2 focus:ring-primary/20;
+  }
+  
+  .label-modern {
+    @apply block text-sm font-medium text-foreground mb-2;
+  }
+  
+  /* Enhanced Badge Styles */
+  .badge-modern {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .badge-primary-modern {
+    @apply badge-modern bg-primary/10 text-primary border border-primary/20;
+  }
+  
+  .badge-success-modern {
+    @apply badge-modern bg-success/10 text-success border border-success/20;
+  }
+  
+  .badge-warning-modern {
+    @apply badge-modern bg-warning/10 text-warning border border-warning/20;
+  }
+  
+  .badge-info-modern {
+    @apply badge-modern bg-info/10 text-info border border-info/20;
+  }
+}
+
+@layer utilities {
+  /* Enhanced Utility Classes */
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .text-pretty {
+    text-wrap: pretty;
+  }
+  
+  /* Enhanced Spacing */
+  .section-padding {
+    @apply py-16 px-4 md:px-6 lg:px-8;
+  }
+  
+  .container-modern {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Enhanced Shadows */
+  .shadow-modern {
+    @apply shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)];
+  }
+  
+  .shadow-glow {
+    @apply shadow-[0_0_20px_rgba(59,130,246,0.3)];
+  }
+  
+  /* Enhanced Animations */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  /* Enhanced Gradients */
+  .bg-gradient-radial {
+    background: radial-gradient(ellipse at center, var(--tw-gradient-stops));
+  }
+  
+  .bg-gradient-conic {
+    background: conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops));
+  }
+}
+
+/* Enhanced View Transitions API */
+@supports (view-transition-name: none) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.5s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+  }
+  
+  ::view-transition-old(root) {
+    animation-name: fade-out;
+  }
+  
+  ::view-transition-new(root) {
+    animation-name: fade-in;
+  }
+}
+
+/* Enhanced Keyframes */
+@keyframes fade-out {
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Enhanced RTL Support */
+[dir="rtl"] {
+  .rtl-flip {
+    transform: scaleX(-1);
+  }
+}
+
+/* Enhanced Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-break {
+    page-break-before: always;
+  }
+}
